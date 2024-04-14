@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "wrangler dev index.ts",
+    "dev": "wrangler dev src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@upstash/ratelimit": "^1.0.3",
+    "@upstash/redis": "^1.29.0",
     "hono": "^4.2.4",
     "redis": "^4.6.13"
   },
