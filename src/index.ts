@@ -7,6 +7,12 @@ import { todos } from "./data/data.json";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis/cloudflare";
 
+declare module "hono" {
+  interface ContextVariableMap {
+    ratelimit: Ratelimit;
+  }
+}
+
 const app = new Hono();
 
 const cache = new Map();
@@ -16,14 +22,14 @@ class RedisRateLimiter {
 
   static getInstance(c: Context<Env, "/todos/:id", BlankInput>) {
     if (!this.instance) {
-      const { REDIS_URL, REDIS_TOKEN } = env<{
-        REDIS_URL: string;
-        REDIS_TOKEN: string;
+      const { UPSTASH_REDIS_URL, UPSTASH_REDIS_TOKEN } = env<{
+        UPSTASH_REDIS_URL: string;
+        UPSTASH_REDIS_TOKEN: string;
       }>(c);
 
       const redisClient = new Redis({
-        token: REDIS_TOKEN,
-        url: REDIS_URL,
+        token: UPSTASH_REDIS_TOKEN,
+        url: UPSTASH_REDIS_URL,
       });
 
       const ratelimit = new Ratelimit({
@@ -40,12 +46,27 @@ class RedisRateLimiter {
   }
 }
 
-app.get("/todos/:id", (c) => {
-  const todoId = c.req.param("id");
-  const todoIndex = Number(todoId);
-  const todo = todos[todoIndex] || {};
+app.use(async (c, next) => {
+  const ratelimit = RedisRateLimiter.getInstance(c);
+  c.set("ratelimit", ratelimit);
+  await next();
+})
 
-  return c.json({ todo });
+app.get("/todos/:id", async (c) => {
+  const ratelimit = c.get("ratelimit");
+  const ip = c.req.raw.headers.get("CF-Connecting-IP");
+
+  const { success } = await ratelimit.limit(ip ?? "anonymous");
+
+  if (success) {
+    const todoId = c.req.param("id");
+    const todoIndex = Number(todoId);
+    const todo = todos[todoIndex] || {};
+
+    return c.json({ todo });
+  } else {
+    return c.json({ message: "Too many requests" }, { status: 429 });
+  }
 });
 
 export default app;
