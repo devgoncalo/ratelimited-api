@@ -1,6 +1,0 @@
-compatibility_date = "2024-04-08"
-name = "ratelimited-api"
-
-[vars]
-UPSTASH_REDIS_URL="https://eu1-stirred-leopard-38519.upstash.io"
-UPSTASH_REDIS_TOKEN="AZZ3ASQgN2E5YzE0ZmMtOGIwOS00MDU1LWExNTQtNWIwM2Y1MTc3Y2VmODQ0ODQ1ZGNiYjQ4NGFjNWI3NzBhMmY3MjI5ZmJmMTU="
