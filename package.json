@@ -11,7 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "hono": "^4.2.4"
+    "hono": "^4.2.4",
+    "redis": "^4.6.13"
   },
   "devDependencies": {
     "wrangler": "^3.50.0"
